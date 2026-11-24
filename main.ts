@@ -1,11 +1,19 @@
-// A working news-image-daily entry (Node 22, standard library only): its image is the entry.png beside this file, and
-// the program copies it to /output/entry.png. A starting point, not a winner: replace the image. The gate takes a
-// whole PNG or JPEG of at most 1 MiB and 1024 by 1024 pixels, and the judge sees exactly the bytes copied.
-//
-// Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
-//   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+// "The World Today — Tuesday, 24 November 2026" (make.fun news-image-20261124).
+// A dense one-page newspaper front page: 43 date-checked stories across 11
+// regions, a UTC time bar and a schematic world map, rendered from HTML/CSS in
+// headless Chromium. The image is entry.png beside this file; the program
+// copies it to /output/entry.png (MAKEFUN_OUTPUT_DIR outside the grader).
+// Node 22, standard library only; no network at run time.
 
-import { copyFileSync } from 'node:fs';
+import { copyFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-copyFileSync(new URL('./entry.png', import.meta.url), join(process.env.MAKEFUN_OUTPUT_DIR ?? '/output', 'entry.png'));
+const src = new URL('./entry.png', import.meta.url);
+const dst = join(process.env.MAKEFUN_OUTPUT_DIR ?? '/output', 'entry.png');
+copyFileSync(src, dst);
+// Verify the copy landed whole: non-empty and the same size as the source.
+const inSize = statSync(src).size;
+const outSize = statSync(dst).size;
+if (outSize === 0 || outSize !== inSize) {
+  throw new Error(`entry.png copy failed: source ${inSize} bytes, output ${outSize} bytes`);
+}
